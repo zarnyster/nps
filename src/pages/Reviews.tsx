@@ -49,6 +49,7 @@ export default function Reviews() {
   )
   const [category, setCategory] = useState<string | undefined>(searchParams.get("category") || undefined)
   const [scoreTypeParam] = useState(searchParams.get("scoreType") || undefined)
+  const [scoreTypesParam] = useState(searchParams.get("scoreTypes") || undefined)
   const [hasCommentParam] = useState(searchParams.get("hasComment") || undefined)
   const [hasEditorialParam] = useState(searchParams.get("hasEditorial") || undefined)
 
@@ -72,7 +73,7 @@ export default function Reviews() {
   }, [year, month, allMonths])
 
   const [scoreTypes, setScoreTypes] = useState<string[]>(
-    scoreTypeParam ? [scoreTypeParam] : []
+    scoreTypesParam ? scoreTypesParam.split(",").filter(Boolean) : scoreTypeParam ? [scoreTypeParam] : []
   )
   const [hasComment, setHasComment] = useState<boolean>(
     hasCommentParam ? hasCommentParam === "true" : true
@@ -125,11 +126,11 @@ export default function Reviews() {
     setPage(0)
     if (key === "all") {
       setScoreTypes([])
-      setHasComment(false)
+      setHasComment(true)
       setHasEditorial("all")
     } else if (key === "negatives") {
       setScoreTypes(["detractor", "neutral"])
-      setHasComment(false)
+      setHasComment(true)
       setHasEditorial("all")
     } else if (key === "todo") {
       setScoreTypes(["detractor", "neutral"])
@@ -138,7 +139,7 @@ export default function Reviews() {
     }
   }
   const Oe = useMemo(() => {
-    if (scoreTypes.length === 0 && !hasComment) return "all"
+    if (scoreTypes.length === 0 && hasEditorial !== "true") return "all"
     if (scoreTypes.includes("detractor") && scoreTypes.includes("neutral") && !scoreTypes.includes("promoter")) {
       if (hasComment && hasEditorial === "true") return "todo"
       return "negatives"

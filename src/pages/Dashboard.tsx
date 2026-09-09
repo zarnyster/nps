@@ -148,14 +148,14 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => openReviews({ scoreType: "detractor", ...(projectId ? { projectId: String(projectId) } : {}) })}>
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => openReviews({ scoreTypes: "detractor,neutral", hasComment: "true", ...(projectId ? { projectId: String(projectId) } : {}) })}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-              <ThumbsDown className="w-4 h-4 text-red-500" /> Негативы (0–6)
+              <ThumbsDown className="w-4 h-4 text-red-500" /> Негативы (0–8)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-red-600">{stats?.detractors ?? "—"}</div>
+            <div className="text-4xl font-bold text-red-600">{stats ? stats.detractors + stats.neutrals : "—"}</div>
             <p className="text-xs text-slate-500 mt-1">
               {stats ? `${stats.negativesWithComment} с комментарием` : ""} · нажмите, чтобы открыть
             </p>
@@ -214,7 +214,7 @@ export default function Dashboard() {
                     radius={[0, 4, 4, 0]}
                     cursor="pointer"
                     onClick={(data: any) =>
-                      openReviews({ scoreType: "detractor", category: data.name, ...(projectId ? { projectId: String(projectId) } : {}) })
+                      openReviews({ scoreTypes: "detractor,neutral", hasComment: "true", category: data.name, ...(projectId ? { projectId: String(projectId) } : {}) })
                     }
                   />
                 </BarChart>
@@ -275,7 +275,7 @@ export default function Dashboard() {
                     <tr
                       key={p.projectId}
                       className="border-t hover:bg-blue-50 cursor-pointer"
-                      onClick={() => openReviews({ scoreType: "detractor", projectId: String(p.projectId) })}
+                      onClick={() => openReviews({ scoreTypes: "detractor,neutral", hasComment: "true", projectId: String(p.projectId) })}
                       title="Нажмите, чтобы открыть негативы этой системы"
                     >
                       <td className="px-4 py-2 text-blue-700 underline-offset-2 hover:underline">{p.projectName}</td>
