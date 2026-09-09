@@ -307,8 +307,8 @@ export default function Reviews() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-md">
-                    <div className="text-sm text-slate-700 line-clamp-2" title={r.comment ?? ""}>
+                  <TableCell className="max-w-2xl">
+                    <div className="text-sm text-slate-700 whitespace-pre-wrap break-words">
                       {r.comment || <span className="text-slate-400">—</span>}
                     </div>
                     {(r.comments || []).filter((rc: any) => rc.commentText?.trim()).length > 0 && (
