@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { MultiSelect } from "@/components/ui/multi-select"
 import { trpc } from "@/providers/trpc"
 import {
-  MessageSquare, TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight, Search, CheckCircle2, Pencil,
+  MessageSquare, TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight, Search, CheckCircle2, Pencil, Copy, Check,
 } from "lucide-react"
 
 const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]
@@ -31,6 +31,41 @@ const V = [
   { value: "promoter", label: "Позитивы (9–10)" },
 ]
 const K = ["Звонки/спам","Поиск","Поддержка","Платформа","Контент","Цена","Обучение","Общее недовольство"]
+
+function formatDate(d: unknown): string {
+  const date = d instanceof Date ? d : new Date(String(d))
+  if (isNaN(date.getTime())) return "—"
+  const p = (n: number) => String(n).padStart(2, "0")
+  return `${p(date.getDate())}.${p(date.getMonth() + 1)}.${date.getFullYear()} ${p(date.getHours())}:${p(date.getMinutes())}`
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+  return (
+    <button
+      type="button"
+      title={copied ? "Скопировано!" : "Скопировать"}
+      className="inline-flex items-center justify-center h-5 w-5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+      onClick={async (e) => {
+        e.stopPropagation()
+        try {
+          await navigator.clipboard.writeText(text)
+        } catch {
+          const ta = document.createElement("textarea")
+          ta.value = text
+          document.body.appendChild(ta)
+          ta.select()
+          document.execCommand("copy")
+          document.body.removeChild(ta)
+        }
+        setCopied(true)
+        setTimeout(() => setCopied(false), 1500)
+      }}
+    >
+      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  )
+}
 
 export default function Reviews() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -265,9 +300,10 @@ export default function Reviews() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-40">Период</TableHead>
-                <TableHead className="w-48">Система</TableHead>
+                <TableHead className="w-36">Дата</TableHead>
+                <TableHead className="w-44">Система</TableHead>
                 <TableHead className="w-20">Оценка</TableHead>
+                <TableHead className="w-44">Битрикс</TableHead>
                 <TableHead>Комментарий</TableHead>
                 <TableHead className="w-44">Категория</TableHead>
                 <TableHead className="w-36">Статус</TableHead>
@@ -277,12 +313,12 @@ export default function Reviews() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-400 py-8">Загрузка...</TableCell>
+                  <TableCell colSpan={8} className="text-center text-slate-400 py-8">Загрузка...</TableCell>
                 </TableRow>
               )}
               {data && data.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                  <TableCell colSpan={8} className="text-center text-slate-400 py-8">
                     По заданным фильтрам отзывов не найдено
                   </TableCell>
                 </TableRow>
@@ -290,7 +326,7 @@ export default function Reviews() {
               {(data?.items || []).map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="text-sm text-slate-600 whitespace-nowrap">
-                    {MONTHS[r.month - 1]?.slice(0, 3)} {r.year}
+                    {formatDate(r.date)}
                   </TableCell>
                   <TableCell className="text-sm font-medium">{r.project?.name}</TableCell>
                   <TableCell>
@@ -306,6 +342,16 @@ export default function Reviews() {
                         <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-slate-600">
+                    {r.client ? (
+                      <div className="flex items-center gap-1">
+                        <span className="break-all">{r.client}</span>
+                        <CopyButton text={r.client} />
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="max-w-2xl">
                     <div className="text-sm text-slate-700 whitespace-pre-wrap break-words">
