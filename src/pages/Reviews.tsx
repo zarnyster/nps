@@ -32,11 +32,14 @@ const V = [
 ]
 const K = ["Звонки/спам","Поиск","Поддержка","Платформа","Контент","Цена","Обучение","Общее недовольство"]
 
-function formatDate(d: unknown): string {
+function formatDateParts(d: unknown): { date: string; time: string } {
   const date = d instanceof Date ? d : new Date(String(d))
-  if (isNaN(date.getTime())) return "—"
+  if (isNaN(date.getTime())) return { date: "—", time: "" }
   const p = (n: number) => String(n).padStart(2, "0")
-  return `${p(date.getDate())}.${p(date.getMonth() + 1)}.${date.getFullYear()} ${p(date.getHours())}:${p(date.getMinutes())}`
+  return {
+    date: `${p(date.getDate())}.${p(date.getMonth() + 1)}.${date.getFullYear()}`,
+    time: `${p(date.getHours())}:${p(date.getMinutes())}`,
+  }
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -297,17 +300,17 @@ export default function Reviews() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-36">Дата</TableHead>
-                <TableHead className="w-44">Система</TableHead>
-                <TableHead className="w-20">Оценка</TableHead>
-                <TableHead className="w-44">Битрикс</TableHead>
+                <TableHead className="w-24">Дата</TableHead>
+                <TableHead className="w-36">Система</TableHead>
+                <TableHead className="w-16">Оценка</TableHead>
+                <TableHead className="w-32">Битрикс</TableHead>
                 <TableHead>Комментарий</TableHead>
-                <TableHead className="w-44">Категория</TableHead>
-                <TableHead className="w-36">Статус</TableHead>
-                <TableHead className="w-20" />
+                <TableHead className="w-36">Категория</TableHead>
+                <TableHead className="w-28">Статус</TableHead>
+                <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -325,10 +328,15 @@ export default function Reviews() {
               )}
               {(data?.items || []).map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="text-sm text-slate-600 whitespace-nowrap">
-                    {formatDate(r.date)}
+                  <TableCell className="text-sm text-slate-600">
+                    {(() => { const dp = formatDateParts(r.date); return (
+                      <>
+                        <div className="whitespace-nowrap">{dp.date}</div>
+                        {dp.time && <div className="text-xs text-slate-400 whitespace-nowrap">{dp.time}</div>}
+                      </>
+                    ) })()}
                   </TableCell>
-                  <TableCell className="text-sm font-medium">{r.project?.name}</TableCell>
+                  <TableCell className="text-sm font-medium break-words whitespace-normal">{r.project?.name}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <span className={`font-bold ${r.score <= 6 ? "text-red-600" : r.score <= 8 ? "text-amber-600" : "text-emerald-600"}`}>
@@ -379,7 +387,7 @@ export default function Reviews() {
                   </TableCell>
                   <TableCell>
                     {r.category ? (
-                      <Badge variant="outline" className="text-xs">{r.category}</Badge>
+                      <Badge variant="outline" className="text-xs whitespace-normal break-words leading-tight">{r.category}</Badge>
                     ) : (
                       <span className="text-xs text-slate-400">—</span>
                     )}
